@@ -1,3 +1,5 @@
+import sass from 'node-sass';
+
 export interface ResultCode {
   selectorName: string
   resultVal: string
@@ -2297,3 +2299,25 @@ export const CssToTailwindTranslator = (code: string, config: TranslatorConfig =
     data: dataArray
   }
 }
+
+export const SassToTailwindTranslator = (sassCode: string, config: TranslatorConfig = defaultTranslatorConfig): {
+  code: 'SyntaxError' | 'OK'
+  data: ResultCode[]
+} => {
+  let cssCode: string;
+
+  try {
+    cssCode = sass.renderSync({
+      data: sassCode,
+    }).css.toString();
+  } catch (error) {
+    console.error('Error compiling Sass to CSS:', error);
+    return {
+      code: 'SyntaxError',
+      data: [],
+    };
+  }
+
+  // convert CSS to Tailwind CSS
+  return CssToTailwindTranslator(cssCode, config);
+};
